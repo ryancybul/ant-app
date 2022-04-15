@@ -1,0 +1,10 @@
+.grid{
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    max-width: 750px;
+    grid-gap: 1rem;
+}
+
+.gridHeader {
+    font-weight: bold;
+}
