@@ -34,23 +34,13 @@ function Ants() {
   const raceAnts = async (ants) => {
     setRaceStatus("In progress 🏁");
 
-    //Call the function for each ant
     const newArr = await Promise.all(
-      ants.map(async (ant) => {
-        const newProb = await getsData()((likelihood) => {
-          //Likelihood logs after obj
-          console.log(likelihood);
-          return likelihood;
-        });
-        const obj = {
-          ...ant,
-          probability: newProb,
-        };
-        debugger;
-        //Obj has undefined probiblity and runs before newProb
-        console.log(obj);
-        return obj;
-      })
+      ants.map(async (ant) => ({
+        ...ant,
+        probability: await getsData()((likelihood) => {
+          likelihood;
+        }),
+      }))
     );
 
     await setAnts(newArr);
