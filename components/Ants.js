@@ -18,7 +18,7 @@ function Ants() {
 
   //Ant-win likilihood algorithm
   function generateAntWinLikelihoodCalculator() {
-    const delay = 7000 + Math.random() * 7000;
+    const delay = 10 + Math.random() * 10;
     const likelihoodOfAntWinning = Math.random();
 
     return (callback) => {
@@ -27,37 +27,39 @@ function Ants() {
       }, delay);
     };
   }
+  const getsData = generateAntWinLikelihoodCalculator;
 
-  //To do: Get the callback function to update state.  UseEffectLayout with callback? Promises?
-  const raceAnts = (ants) => {
-    const newProbs = ants.map((ant) => ({
-      ...ant,
-      //Problem: Sets the state to function and not the returned value of the function.
-      probability: generateAntWinLikelihoodCalculator(),
-    }));
-    setAnts(newProbs);
+  //To do: Get the callback function to update state.
+  const raceAnts = async (ants) => {
+    setRaceStatus("In progress 🏁");
+
+    //Call the function for each ant
+    const newArr = await Promise.all(
+      ants.map(async (ant) => {
+        const newProb = await getsData()((likelihood) => {
+          //Likelihood logs after obj
+          console.log(likelihood);
+          return likelihood;
+        });
+        const obj = {
+          ...ant,
+          probability: newProb,
+        };
+        debugger;
+        //Obj has undefined probiblity and runs before newProb
+        console.log(obj);
+        return obj;
+      })
+    );
+
+    await setAnts(newArr);
   };
-
-  // When race is started running calculations on all ants simultaneously and render the DOM with results.
-  useLayoutEffect(() => {
-    if (raceStatus === "Not yet run.") {
-      return;
-    }
-    //To do: Refactor raceAnts to update state.  Separate ants out into components and pass state into them.
-    raceAnts(ants);
-    console.log("Use effect triggered");
-  }, [raceStatus]);
-
-  //To do: Update race status
-  //To do: Sort arrray
 
   return (
     <>
       <h1>🐜</h1>
       <button onClick={() => loadAnts(data)}>Load Ants</button>
-      <button onClick={() => setRaceStatus("In progress 🏁")}>
-        Start Race
-      </button>
+      <button onClick={() => raceAnts(ants)}>Start Race</button>
       <p>{`Race status = ${raceStatus}`}</p>
       <div className={styles.grid}>
         <div className={styles.gridHeader}>Ant name</div>
@@ -65,7 +67,7 @@ function Ants() {
         <div className={styles.gridHeader}>Length</div>
         <div className={styles.gridHeader}>Weight</div>
         <div className={styles.gridHeader}>Probability of winning</div>
-        {ants.map((ant, i) => {
+        {ants.map((ant) => {
           return (
             <>
               <div key={ant.name}>{ant.name}</div>
