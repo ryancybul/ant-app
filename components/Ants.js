@@ -17,8 +17,9 @@ function Ants() {
   };
 
   //Ant-win likilihood algorithm
+  //To do switch time back to 7000 after raceAnts is functional
   function generateAntWinLikelihoodCalculator() {
-    const delay = 10 + Math.random() * 10;
+    const delay = 1 + Math.random() * 1;
     const likelihoodOfAntWinning = Math.random();
 
     return (callback) => {
