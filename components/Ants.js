@@ -1,4 +1,4 @@
-import { useState, useLayoutEffect } from "react";
+import { useState, useEffect } from "react";
 import data from "../public/data.js";
 import styles from "../styles/Ants.module.css";
 
@@ -8,10 +8,11 @@ function Ants() {
 
   // Loads the ant data into local state
   const loadAnts = async (data) => {
+    setRaceStatus("Not yet run.");
     const newArr = await data.map((ant) => ({
       ...ant,
       key: ant.name,
-      probability: "tbd",
+      probability: "Not yet run",
     }));
     await setAnts(newArr);
   };
@@ -19,32 +20,50 @@ function Ants() {
   //Ant-win likilihood algorithm
   //To do switch time back to 7000 after raceAnts is functional
   function generateAntWinLikelihoodCalculator() {
-    const delay = 1 + Math.random() * 1;
+    const delay = 1000 + Math.random() * 1000;
     const likelihoodOfAntWinning = Math.random();
-
     return (callback) => {
       setTimeout(() => {
         callback(likelihoodOfAntWinning);
       }, delay);
     };
   }
-  const getsData = generateAntWinLikelihoodCalculator;
 
-  //To do: Get the callback function to update state.
-  const raceAnts = async (ants) => {
-    setRaceStatus("In progress 🏁");
-
-    const newArr = await Promise.all(
-      ants.map(async (ant) => ({
-        ...ant,
-        probability: await getsData()((likelihood) => {
-          likelihood;
-        }),
-      }))
-    );
-
-    await setAnts(newArr);
+  //Sets the likelihood of each ant winning and sorts by the winning ant.
+  const setLikelihood = (ant, likelihood) => {
+    //Find individual ant in the ants array and update it's probability of winning
+    const findAnt = ants.find((i) => i.name === ant.name);
+    findAnt.probability = likelihood.toFixed(2) * 100;
+    //Find all other ants
+    const remainingAnts = ants.filter((i) => i.name !== ant.name);
+    //Rank ants by sorting their probability of winning
+    const rankAnts = [...remainingAnts, findAnt].sort((a, b) => {
+      return b.probability - a.probability;
+    });
+    setAnts(rankAnts);
   };
+
+  //Loops over each ant and calculate likelihood of winning.
+  const raceAnts = (ants) => {
+    setRaceStatus("In progress 🏁");
+    ants.map((ant) => {
+      const getLikelihood = generateAntWinLikelihoodCalculator();
+      ant.probability = "Calculating...";
+      getLikelihood((likelihood) => {
+        setLikelihood(ant, likelihood);
+      });
+    });
+  };
+
+  //Update race status to all calculated when all likelihoods have been calculated
+  useEffect(() => {
+    const antsCalculated = ants.filter((ant) => {
+      return ant.probability !== "Not yet run";
+    });
+    if (antsCalculated.length === ants.length) {
+      setRaceStatus("Complete");
+    }
+  }, [ants]);
 
   return (
     <>
