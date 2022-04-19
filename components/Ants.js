@@ -5,10 +5,12 @@ import styles from "../styles/Ants.module.css";
 function Ants() {
   const [ants, setAnts] = useState([]);
   const [raceStatus, setRaceStatus] = useState("Not yet run.");
+  const [loadDisabled, setLoadDisabled] = useState(false);
+  const [startDisabled, setStartDisabled] = useState(false);
 
   // Loads the ant data into local state
   const loadAnts = async (data) => {
-    setRaceStatus("Not yet run.");
+    setRaceStatus("Not yet run");
     const newArr = await data.map((ant) => ({
       ...ant,
       key: ant.name,
@@ -33,7 +35,7 @@ function Ants() {
   const setLikelihood = (ant, likelihood) => {
     //Find individual ant in the ants array and update it's probability of winning
     const findAnt = ants.find((i) => i.name === ant.name);
-    findAnt.probability = likelihood.toFixed(2) * 100;
+    findAnt.probability = (likelihood * 100).toFixed(0);
     //Find all other ants
     const remainingAnts = ants.filter((i) => i.name !== ant.name);
     //Rank ants by sorting their probability of winning
@@ -45,7 +47,7 @@ function Ants() {
 
   //Loops over each ant and calculate likelihood of winning.
   const raceAnts = (ants) => {
-    setRaceStatus("In progress 🏁");
+    setRaceStatus("In progress");
     ants.map((ant) => {
       const getLikelihood = generateAntWinLikelihoodCalculator();
       ant.probability = "Calculating...";
@@ -67,10 +69,27 @@ function Ants() {
 
   return (
     <>
-      <h1>🐜</h1>
-      <button onClick={() => loadAnts(data)}>Load Ants</button>
-      <button onClick={() => raceAnts(ants)}>Start Race</button>
-      <p>{`Race status = ${raceStatus}`}</p>
+      <div className={styles.scoreContainer}>
+        <p>{`Race status = ${raceStatus}`}</p>
+        <div className={styles.buttonContainer}>
+          <button
+            onClick={() => {
+              loadAnts(data), setLoadDisabled(true), setStartDisabled(false);
+            }}
+            disabled={loadDisabled}
+          >
+            Load Ants
+          </button>
+          <button
+            onClick={() => {
+              raceAnts(ants), setLoadDisabled(false), setStartDisabled(true);
+            }}
+            disabled={startDisabled}
+          >
+            Start Race
+          </button>
+        </div>
+      </div>
       <div className={styles.grid}>
         <div className={styles.gridHeader}>Ant name</div>
         <div className={styles.gridHeader}>Color</div>
